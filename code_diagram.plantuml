@@ -1,0 +1,123 @@
+@startuml
+
+' Configurações de estilo para ficar profissional
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam class {
+    BackgroundColor White
+    ArrowColor Black
+    BorderColor Black
+}
+
+title Diagrama de Classes - Sistema Acadêmico (Modelo SOL)
+
+' --- Superclasse Abstrata ---
+abstract class Pessoa {
+    # String nome
+    # String cpf
+    # String email
+    + Pessoa(String nome, String cpf, String email)
+    + String getNome()
+    + {abstract} void apresentar()
+}
+
+' --- Classes de Atores ---
+class Aluno {
+    - String matricula
+    + Aluno(String nome, String cpf, String matricula)
+    + void solicitarMatricula(Turma turma)
+    + String consultarHistorico()
+    + String getMatricula()
+}
+
+class Professor {
+    - String registroFuncional
+    - String titulacao
+    + Professor(String nome, String cpf, String titulacao)
+    + void lancarNota(Matricula matricula, double nota1, double nota2)
+    + void lancarFrequencia(Matricula matricula, int faltas)
+}
+
+' --- Classes Estruturais do Curso ---
+class Curso {
+    - String nome
+    - int codigoCurso
+    - int qtdSemestres
+    + void adicionarDisciplina(Disciplina d)
+    + List<Disciplina> getGradeCurricular()
+}
+
+class Disciplina {
+    - String nome
+    - String codigoDisciplina
+    - int cargaHoraria
+    - String ementa
+    + String getDetalhes()
+}
+
+' --- Classes de Execução (Onde a aula acontece) ---
+class Turma {
+    - String codigoTurma
+    - String semestre
+    - int ano
+    - boolean ativa
+    + Turma(String codigo, Disciplina d, Professor p)
+    + boolean adicionarAluno(Aluno aluno)
+    + Matricula buscarMatricula(String matriculaAluno)
+    + String gerarPauta()
+    + void fecharTurma()
+}
+
+' --- Classe Associativa (O Coração do Sistema) ---
+class Matricula {
+    - Date dataMatricula
+    - double nota1
+    - double nota2
+    - double mediaFinal
+    - int frequencia
+    - String status
+    + Matricula(Aluno a, Turma t)
+    + void registrarNotas(double n1, double n2)
+    + void registrarFrequencia(int f)
+    + void calcularMedia()
+    + boolean verificarAprovacao()
+    + String getResumo()
+}
+
+' --- Controller / Banco em Memória ---
+class SistemaAcademico {
+    - List<Aluno> alunos
+    - List<Professor> professores
+    - List<Curso> cursos
+    - List<Turma> turmas
+    + void cadastrarAluno(Aluno a)
+    + void cadastrarTurma(Turma t)
+    + Aluno buscarAluno(String matricula)
+    + void executar()
+}
+
+' --- Relacionamentos ---
+
+' Herança
+Pessoa <|-- Aluno
+Pessoa <|-- Professor
+
+' Estrutura Acadêmica
+Curso "1" *-- "1..*" Disciplina : Composição >
+Aluno "0..*" --> "1" Curso : Vinculado a >
+
+' Execução e Matrícula
+Turma "0..*" o-- "1" Professor : Agregação >
+Turma "0..*" --> "1" Disciplina : Refere-se a >
+
+' A relação ternária resolvida (Matrícula conecta Aluno e Turma)
+Aluno "1" <-- "0..*" Matricula : Referencia
+Turma "1" *-- "0..*" Matricula : Contém (Composição) >
+
+' O Sistema gerencia tudo
+SistemaAcademico o-- Aluno
+SistemaAcademico o-- Turma
+SistemaAcademico o-- Curso
+
+@enduml
+
