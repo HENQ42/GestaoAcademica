@@ -4,96 +4,110 @@
 skinparam classAttributeIconSize 0
 skinparam linetype ortho
 skinparam class {
-    BackgroundColor White
-    ArrowColor Black
-    BorderColor Black
+BackgroundColor White
+ArrowColor Black
+BorderColor Black
 }
 
 title Diagrama de Classes - Sistema Acadêmico (Modelo SOL)
 
+' --- Utilitários (Audit) ---
+class Logger {
+- {static} DateTimeFormatter FORMATTER
+- {static} String buildLogMessage(String level, String message)
++ {static} void info(String message)
++ {static} void error(String message, Exception e)
+}
+
 ' --- Superclasse Abstrata ---
 abstract class Pessoa {
-    # String nome
-    # String cpf
-    # String email
-    + Pessoa(String nome, String cpf, String email)
-    + String getNome()
-    + {abstract} void apresentar()
+# String nome
+# String cpf
+# String email
++ Pessoa(String nome, String cpf, String email)
++ String getNome()
++ {abstract} void apresentar()
 }
 
 ' --- Classes de Atores ---
 class Aluno {
-    - String matricula
-    + Aluno(String nome, String cpf, String matricula)
-    + void solicitarMatricula(Turma turma)
-    + String consultarHistorico()
-    + String getMatricula()
+- String matricula
++ Aluno(String nome, String cpf, String email, String matricula, Curso curso)
++ void solicitarMatricula(Turma turma)
++ String consultarHistorico()
++ String getMatricula()
 }
 
 class Professor {
-    - String registroFuncional
-    - String titulacao
-    + Professor(String nome, String cpf, String titulacao)
-    + void lancarNota(Matricula matricula, double nota1, double nota2)
-    + void lancarFrequencia(Matricula matricula, int faltas)
+- String registroFuncional
+- String titulacao
++ Professor(String nome, String cpf, String email, String registroFuncional, String titulacao)
++ void lancarNota(Matricula matricula, double nota1, double nota2)
++ void lancarFrequencia(Matricula matricula, int faltas)
 }
 
 ' --- Classes Estruturais do Curso ---
 class Curso {
-    - String nome
-    - int codigoCurso
-    - int qtdSemestres
-    + void adicionarDisciplina(Disciplina d)
-    + List<Disciplina> getGradeCurricular()
+- String nome
+- int codigoCurso
+- int qtdSemestres
++ Curso(String nome, int codigoCurso, int qtdSemestres)
++ void adicionarDisciplina(Disciplina d)
++ String getNome()
 }
 
 class Disciplina {
-    - String nome
-    - String codigoDisciplina
-    - int cargaHoraria
-    - String ementa
-    + String getDetalhes()
+- String nome
+- String codigoDisciplina
+- int cargaHoraria
+- String ementa
++ Disciplina(String nome, String codigo, int carga, String ementa)
++ String getNome()
++ String getDetalhes()
 }
 
 ' --- Classes de Execução (Onde a aula acontece) ---
 class Turma {
-    - String codigoTurma
-    - String semestre
-    - int ano
-    - boolean ativa
-    + Turma(String codigo, Disciplina d, Professor p)
-    + boolean adicionarAluno(Aluno aluno)
-    + Matricula buscarMatricula(String matriculaAluno)
-    + String gerarPauta()
-    + void fecharTurma()
+- String codigoTurma
+- String semestre
+- int ano
+- boolean ativa
++ Turma(String codigo, String semestre, int ano, Disciplina d, Professor p)
++ boolean adicionarAluno(Aluno aluno)
++ Matricula buscarMatricula(String matriculaAluno)
++ String gerarPauta()
++ void fecharTurma()
++ String getNome()
 }
 
 ' --- Classe Associativa (O Coração do Sistema) ---
 class Matricula {
-    - Date dataMatricula
-    - double nota1
-    - double nota2
-    - double mediaFinal
-    - int frequencia
-    - String status
-    + Matricula(Aluno a, Turma t)
-    + void registrarNotas(double n1, double n2)
-    + void registrarFrequencia(int f)
-    + void calcularMedia()
-    + boolean verificarAprovacao()
-    + String getResumo()
+- Date dataMatricula
+- double nota1
+- double nota2
+- double mediaFinal
+- int frequencia
+- String status
++ Matricula(Aluno a, Turma t)
++ void registrarNotas(double n1, double n2)
++ void registrarFrequencia(int f)
++ void calcularMedia()
++ boolean verificarAprovacao()
++ String getResumo()
 }
 
 ' --- Controller / Banco em Memória ---
 class SistemaAcademico {
-    - List<Aluno> alunos
-    - List<Professor> professores
-    - List<Curso> cursos
-    - List<Turma> turmas
-    + void cadastrarAluno(Aluno a)
-    + void cadastrarTurma(Turma t)
-    + Aluno buscarAluno(String matricula)
-    + void executar()
+- List<Aluno> alunos
+- List<Professor> professores
+- List<Curso> cursos
+- List<Turma> turmas
++ void cadastrarAluno(Aluno a)
++ void cadastrarProfessor(Professor p)
++ void cadastrarCurso(Curso c)
++ void cadastrarTurma(Turma t)
++ Aluno buscarAluno(String matricula)
++ int totalAlunos()
 }
 
 ' --- Relacionamentos ---
@@ -103,21 +117,29 @@ Pessoa <|-- Aluno
 Pessoa <|-- Professor
 
 ' Estrutura Acadêmica
-Curso "1" *-- "1..*" Disciplina : Composição >
+Curso "1" -- "0.." Disciplina : Composição >
 Aluno "0..*" --> "1" Curso : Vinculado a >
 
 ' Execução e Matrícula
-Turma "0..*" o-- "1" Professor : Agregação >
-Turma "0..*" --> "1" Disciplina : Refere-se a >
+Turma "0.." o-- "1" Professor : Agregação >
+Turma "0.." --> "1" Disciplina : Refere-se a >
 
 ' A relação ternária resolvida (Matrícula conecta Aluno e Turma)
 Aluno "1" <-- "0..*" Matricula : Referencia
-Turma "1" *-- "0..*" Matricula : Contém (Composição) >
+Turma "1" -- "0.." Matricula : Contém (Composição) >
 
 ' O Sistema gerencia tudo
 SistemaAcademico o-- Aluno
 SistemaAcademico o-- Turma
 SistemaAcademico o-- Curso
+SistemaAcademico o-- Professor
+
+' Dependência de Log (Transversal)
+' Nota: O Logger é usado por quase todas as classes,
+' mas desenhar todas as setas poluiria o diagrama.
+' Representamos aqui apenas uma dependência conceitual geral.
+SistemaAcademico ..> Logger : usa
+Turma ..> Logger : usa
+Matricula ..> Logger : usa
 
 @enduml
-

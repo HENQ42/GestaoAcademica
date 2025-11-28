@@ -1,28 +1,53 @@
 package domain;
 
+import audit.Logger;
+
 public class Professor extends Pessoa {
     private String registroFuncional;
     private String titulacao;
 
     public Professor(String nome, String cpf, String email, String registroFuncional, String titulacao) {
         super(nome, cpf, email);
-        this.registroFuncional = registroFuncional;
-        this.titulacao = titulacao;
+        try {
+            this.registroFuncional = registroFuncional;
+            this.titulacao = titulacao;
+            Logger.info("Professor criado: " + nome + " (" + titulacao + ")");
+        } catch (Exception e) {
+            Logger.error("Erro ao criar professor: " + nome, e);
+        }
     }
 
     public void lancarNota(Matricula matricula, double nota1, double nota2) {
-        matricula.registrarNotas(nota1, nota2);
-        System.out.println("Notas lançadas para o aluno " + matricula.getAluno().getNome());
+        try {
+            if (matricula == null) {
+                throw new IllegalArgumentException("Matrícula não pode ser nula.");
+            }
+            matricula.registrarNotas(nota1, nota2);
+            Logger.info("Notas lançadas para o aluno " + matricula.getAluno().getNome());
+        } catch (Exception e) {
+            Logger.error("Erro ao lançar notas.", e);
+        }
     }
 
     public void lancarFrequencia(Matricula matricula, int faltas) {
-        matricula.registrarFrequencia(faltas);
-        System.out.println("Frequência atualizada para o aluno " + matricula.getAluno().getNome());
+        try {
+            if (matricula == null) {
+                throw new IllegalArgumentException("Matrícula não pode ser nula.");
+            }
+            matricula.registrarFrequencia(faltas);
+            Logger.info("Frequência atualizada para o aluno " + matricula.getAluno().getNome());
+        } catch (Exception e) {
+            Logger.error("Erro ao lançar frequência.", e);
+        }
     }
 
     @Override
     public void apresentar() {
-        System.out.println("Sou o Professor " + nome + ", " + titulacao);
+        try {
+            String msg = "Sou o Professor " + nome + ", " + titulacao;
+            Logger.info(msg);
+        } catch (Exception e) {
+            Logger.error("Erro ao apresentar professor " + this.nome, e);
+        }
     }
 }
-

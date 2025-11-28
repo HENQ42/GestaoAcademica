@@ -1,5 +1,7 @@
 package domain;
 
+import audit.Logger;
+
 public class Aluno extends Pessoa {
     private String matricula;
     private Curso curso;
@@ -8,6 +10,7 @@ public class Aluno extends Pessoa {
         super(nome, cpf, email);
         this.matricula = matricula;
         this.curso = curso;
+        Logger.info("Objeto Aluno criado: " + nome + " (Matrícula: " + matricula + ")");
     }
 
     public String getMatricula() {
@@ -15,21 +18,44 @@ public class Aluno extends Pessoa {
     }
 
     public void solicitarMatricula(Turma turma) {
-        boolean sucesso = turma.adicionarAluno(this);
-        if (sucesso) {
-            System.out.println("Matrícula realizada com sucesso para: " + this.nome);
-        } else {
-            System.out.println("Não foi possível realizar matrícula.");
+        try {
+            if (turma == null) {
+                throw new IllegalArgumentException("A turma não pode ser nula.");
+            }
+
+            boolean sucesso = turma.adicionarAluno(this);
+            
+            if (sucesso) {
+                Logger.info("Matrícula realizada com sucesso para: " + this.nome);
+            } else {
+                Logger.info("Não foi possível realizar matrícula para: " + this.nome);
+            }
+        } catch (Exception e) {
+            Logger.error("Erro ao solicitar matrícula para " + this.nome, e);
         }
     }
 
     public String consultarHistorico() {
-        return "Histórico do aluno: " + this.nome + " (Curso: " + curso.getNome() + ")";
+        try {
+            if (curso == null) {
+                throw new IllegalStateException("Aluno sem curso vinculado.");
+            }
+            String historico = "Histórico do aluno: " + this.nome + " (Curso: " + curso.getNome() + ")";
+            Logger.info("Histórico consultado para: " + this.nome);
+            return historico;
+        } catch (Exception e) {
+            Logger.error("Erro ao consultar histórico de " + this.nome, e);
+            return "Erro ao obter histórico.";
+        }
     }
 
     @Override
     public void apresentar() {
-        System.out.println("Sou o aluno " + nome + ", matrícula " + matricula);
+        try {
+            String apresentacao = "Sou o aluno " + nome + ", matrícula " + matricula;
+            Logger.info(apresentacao);
+        } catch (Exception e) {
+            Logger.error("Erro ao apresentar aluno " + this.nome, e);
+        }
     }
 }
-
