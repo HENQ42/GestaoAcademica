@@ -51,6 +51,7 @@ class Curso {
 - String nome
 - int codigoCurso
 - int qtdSemestres
+- List<Disciplina> gradeCurricular
 + Curso(String nome, int codigoCurso, int qtdSemestres)
 + void adicionarDisciplina(Disciplina d)
 + String getNome()
